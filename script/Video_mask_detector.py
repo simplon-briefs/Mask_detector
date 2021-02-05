@@ -1,35 +1,45 @@
 import cv2
 from keras.models import load_model
-
+import numpy as np
+import playsound
+import time
+#import vlc
+from sklearn.metrics import accuracy_score
 from keras_mask_detector import Keras_mask_detector
 
 
 class Video_mask_detector:
     def __init__(self):
         self.model = None
-
+        self.haar = cv2.CascadeClassifier("../xml/haarcascade_frontalface_default.xml")
         self.get_model()
         self.video()
 
     def get_model(self):
         try:
-            self.model = load_model("model/model.h5")
+            self.model = load_model("../model.h5")
         except:
             Keras_mask_detector()
             self.get_model()
 
     def detect_face_mask(self, img):
         y_pred = self.model.predict_classes(img.reshape(1,224,224,3))
-        return y_pred[0][0]
+        yy= self.model.predict(img.reshape(1,224,224,3))
+        return y_pred[0][0],yy
     
     def draw_label(self, img,text,pos,bg_color):
-        text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX,1,cv2.FILLED)
- 
-        end_X = pos[0] + text_size[0][0] + 2
-        end_y = pos[1] + text_size[0][1] - 2
-        
-        cv2.rectangle(img,pos,(end_X,end_y), bg_color,cv2.FILLED)
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),1)
         cv2.putText(img,text,pos,cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,0),1,cv2.LINE_AA)
+
+    def song(self):
+        p = vlc.MediaPlayer("song/song.mp3")
+        p.play()
+        time.sleep(1)
+        p.stop()
+
+    def detect_face(self, img):   
+        coods = self.haar.detectMultiScale(img)
+        return coods
 
     def video(self):
         cap = cv2.VideoCapture(0)

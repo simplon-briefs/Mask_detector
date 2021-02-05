@@ -13,6 +13,8 @@ from keras.layers import Dense
 
 class Keras_mask_detector:
     def __init__(self):
+        self.file_exited()
+
         self.data = []
         self.X_train = None
         self.X_test = None
@@ -24,17 +26,26 @@ class Keras_mask_detector:
         self.train_model()
 
 
-        
+    def file_exited(self):
+        path = 'dataset_faceMask/'
+        if os.path.exists(path) :
+            print("Chemin " , path, " existe")
+        else:
+            print("Chemin " , path, " n'existe pas")
+
+
+
     def img_to_data(self):
         categories = ["with_mask", "without_mask"]
         for category in categories:
-            path = os.path.join('Dataset_masks/train', category)
+            path = os.path.join('dataset_faceMask', category)
     
             label = categories.index(category)
             for file in os.listdir(path):
                 img_path = os.path.join(path,file)
                 img = cv2.imread(img_path)
                 img = cv2.resize(img,(224, 224))
+                self.data.append([img,label])
                 
                 self.data.append([img,label])
         random.shuffle(self.data)
@@ -58,5 +69,6 @@ class Keras_mask_detector:
 
         self.model.compile(optimizer='Adam', loss='binary_crossentropy', metrics=["accuracy"])
         self.model.fit(self.X_train, self.y_train, epochs=5, validation_data=(self.X_test, self.y_test))
-        self.model.save('model/model.h5',save_format='h5')
+        self.model.save('model.h5',save_format='h5')
 
+Keras_mask_detector()
